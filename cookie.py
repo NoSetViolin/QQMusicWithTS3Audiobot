@@ -16,3 +16,4 @@ try:
     print(f"响应内容: {response.text}")
 except requests.RequestException as e:
     print(f"请求失败: {e}")
+input("按下Enter键退出...")

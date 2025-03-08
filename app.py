@@ -7,6 +7,8 @@ app = Flask(__name__)
 # -----------------配置区域------------------
 QQ_MUSIC_API = "http://10.0.0.254:3300"
 BACKEND_API = "http://localhost:7000"
+GOTIFY_URL = "http://localhost:48080/message"  # Gotify URL配置
+GOTIFY_TOKEN = "A0aCk_0TG0MS0W0"               # 这里填你的token
 # ----------------------------------------------------
 
 def extract_segment(text, key):
@@ -58,6 +60,22 @@ def index():
             cover_url = f"http://y.qq.com/music/photo_new/T002R300x300M000{albummid}.jpg" if albummid else None
             print(f"[前端] 生成播放URL：{play_url}")
             print(f"[前端] 生成封面URL：{cover_url}")
+
+            # ============= Gotify推送 =============
+            try:
+                requests.post(
+                    GOTIFY_URL,
+                    params={"token": GOTIFY_TOKEN},
+                    data={
+                        "title": "QQ音乐点歌",
+                        "message": f"用户点了歌曲：{target_songname}",
+                        "priority": "8"
+                    },
+                    timeout=3  
+                )
+                print("[推送] Gotify通知已发送")
+            except Exception as e:
+                print(f"[推送] 通知失败: {str(e)}")
 
             # 发送到后端
             payload = {
