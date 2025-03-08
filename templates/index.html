@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="http://kennyz.cn:11444/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ音乐点歌</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- 样式 -->
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333333;
+            --container-bg: #ffffff;
+            --input-bg: #f0f0f0;
+            --border-color: #dddddd;
+            --primary-color: #2549ff;
+            --hover-color: #1a3ab5;
+            --result-bg: #f8f9fa;
+            --transition-time: 0.3s;
+
+            /* 深色主题变量 */
+            &[data-theme="dark"] {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --container-bg: #1f1f1f;
+                --input-bg: #333333;
+                --border-color: #444444;
+                --primary-color: #6ca2ff;
+                --hover-color: #4d7ac7;
+                --result-bg: #222222;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color var(--transition-time),
+                color var(--transition-time),
+                border-color var(--transition-time);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        input,
+        select {
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-color);
+            background-color: var(--input-bg);
+        }
+
+        input::placeholder {
+            color: color-mix(in srgb, var(--text-color) 50%, transparent);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 1.1rem;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--result-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .result h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            background: color-mix(in srgb, var(--text-color) 15%, transparent);
+            color: var(--text-color);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        #theme-toggle:hover {
+            background: color-mix(in srgb, var(--text-color) 25%, transparent);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --container-bg: #1f1f1f;
+                --input-bg: #333333;
+                --border-color: #444444;
+                --primary-color: #6ca2ff;
+                --hover-color: #4d7ac7;
+                --result-bg: #222222;
+            }
+        }
+
+        .stop-btn {
+            background-color: #ff4444;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+
+        .stop-btn:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="theme-toggle" title="切换主题">🌓</button>
+
+    <div class="container">
+        <h1>QQ音乐点歌</h1>
+        <form method="POST">
+            <label for="song">输入歌曲名称：</label>
+            <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
+
+            <label for="quality">选择音质：</label>
+            <select id="quality" name="quality" required>
+                <option value="320">320kbps</option>
+                <option value="flac">FLAC</option>
+            </select>
+
+            <!-- 新增选择 BOT ID的部分 -->
+            <label for="botid">选择 BOT ID：</label>
+            <select id="botid" name="botid" required>
+                <option value="0">BOT 0</option>
+                <option value="1">BOT 1</option>
+                <option value="2">BOT 2</option>
+            </select>
+
+            <button type="submit">搜索并点歌</button>
+        </form>
+
+        <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
+
+        {% if play_url %}
+        <div class="result">
+            <h2>播放链接</h2>
+            <p>歌曲名称：{{ song_name }}</p>
+            {% if cover_url %}
+            <img src="{{ cover_url }}" alt="专辑封面"
+                style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
+            {% endif %}
+            <a href="{{ play_url }}" target="_blank"
+                style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
+                音频直链
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            const savedTheme = localStorage.getItem('theme') ||
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        });
+    </script>
+    <script>
+        document.getElementById('stop-btn').addEventListener('click', function () {
+            const botId = document.getElementById('botid').value; // 获取选中的 BOT ID
+            fetch('/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `botid=${botId}` // 将 BOT ID 添加到请求体中
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('失败: ' + data.error);
+                    } else {
+                        console.log('成功: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    console.error('请求发送失败');
+                });
+        });
+    </script>
+</body>
+
+</html>
