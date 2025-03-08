@@ -3,6 +3,8 @@
 这是一个网页点歌程序，原理是获取用户输入歌名，qqmusicAPI返回数据中提取第一位的songmid和mediamid进行传递，API目前只支持手动更新cookie，而且QQ音乐的cookie有效期较短（只有4天这样）
 
 ## 用法:
+
+### 先执行 pip install -r requirements.txt安装依赖模块
 ### · app.py
 
    这是网页的主程序，用编辑器打开后请自行按照我里面提示修改保存，网页html在templates/index.html需要可以修改
@@ -13,7 +15,7 @@
    BACKEND_API = "http://localhost:7000"   
    ```     
 
-   运行python app.py
+   运行 python app.py
 
 ### · backend.py
 
@@ -23,7 +25,7 @@
    ```python
    BASE_API = "http://localhost:58913"  # BOT后台地址（示例：http://tsbot.cn:58913）
    ```
-   运行python server.py
+   运行 python server.py
 
 
 ### · cookie.py
@@ -33,7 +35,7 @@
    记住不要有`/`
 
 
-   运行python cookie.py
+   运行 python cookie.py
 
 ### · templates/index.html
 
