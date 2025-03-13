@@ -1,12 +1,17 @@
 from flask import Flask, request, render_template, jsonify
 import requests
 import re
+from packaging import version
+import threading
+import time
+import schedule
 
 app = Flask(__name__)
 
 # -----------------配置区域------------------
 QQ_MUSIC_API = "http://10.0.0.254:3300"
 BACKEND_API = "http://localhost:7000"
+__version__ = "3.2.1"
 # ----------------------------------------------------
 
 def extract_segment(text, key):
@@ -14,6 +19,35 @@ def extract_segment(text, key):
     pattern = rf'"{key}"\s*:\s*"([^"]+)"'
     match = re.search(pattern, text)
     return match.group(1) if match else None
+
+def check_for_updates():
+    """ 检查更新 """
+    try:
+        print("[更新检查] 正在检查更新...")
+        response = requests.get("http://kennyz.cn:27721/chfs/shared/cdn/latestjson/TS3AudioBotQQMusicAPI/latestVer.json")
+        response.raise_for_status()
+        latest_info = response.json()
+        latest_version = latest_info.get("version")
+        download_url = latest_info.get("url")
+        release_notes = latest_info.get("release_notes", "")
+
+        if latest_version and version.parse(latest_version) > version.parse(__version__):
+            print(f"\n[更新检查] 发现新版本: {latest_version}")
+            print(f"[更新检查] 更新内容: {release_notes}")
+            print(f"[更新检查] 下载链接: {download_url}")
+        else:
+            print("[更新检查] 当前已是最新版本。")
+    except requests.RequestException as e:
+        print(f"[更新检查] 检查更新失败: {e}")
+    except Exception as e:
+        print(f"[更新检查] 更新检查异常: {e}")
+
+def run_scheduler():
+    """ 运行定时任务 """
+    schedule.every(1).hours.do(check_for_updates)
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # 每分钟检查一次待执行任务
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -98,6 +132,10 @@ def stop_proxy():
     except Exception as e:
         print(f"[主程序] 转发异常：{str(e)}")
         return jsonify({"error": "服务暂时不可用"}), 500
-    
+
 if __name__ == "__main__":
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        check_for_updates()
+        threading.Thread(target=run_scheduler, daemon=True).start()
+    
     app.run(host="0.0.0.0", port=29111, debug=True)
