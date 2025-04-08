@@ -11,23 +11,25 @@
         :root {
             --bg-color: #f5f5f5;
             --text-color: #333333;
-            --container-bg: #ffffff;
-            --input-bg: #f0f0f0;
+            --container-bg: rgba(255, 255, 255, 0.651);
+            --input-bg: rgba(240, 240, 240, 0.9);
             --border-color: #dddddd;
             --primary-color: #2549ff;
             --hover-color: #1a3ab5;
-            --result-bg: #f8f9fa;
+            --result-bg: rgba(248, 249, 250, 0.9);
             --transition-time: 0.3s;
+            --bg-overlay: transparent;
 
             &[data-theme="dark"] {
                 --bg-color: #121212;
                 --text-color: #e0e0e0;
-                --container-bg: #1f1f1f;
-                --input-bg: #333333;
+                --container-bg: rgba(31, 31, 31, 0.8);
+                --input-bg: rgba(51, 51, 51, 0.9);
                 --border-color: #444444;
                 --primary-color: #6ca2ff;
                 --hover-color: #4d7ac7;
-                --result-bg: #222222;
+                --result-bg: rgba(34, 34, 34, 0.9);
+                --bg-overlay: rgba(0, 0, 0, 0.5);
             }
         }
 
@@ -43,6 +45,10 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-color);
+            background-image: url('https://www.dmoe.cc/random.php');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: var(--text-color);
             display: flex;
             justify-content: center;
@@ -52,14 +58,27 @@
             position: relative;
         }
 
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-overlay);
+            z-index: -1;
+        }
+
         .container {
             background-color: var(--container-bg);
+            backdrop-filter: blur(25px);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.075);
             padding: 40px;
             width: 100%;
             max-width: 500px;
             text-align: center;
+            z-index: 1; /* 确保高于遮罩 */
         }
 
         h1 {
@@ -89,6 +108,7 @@
             font-size: 1rem;
             color: var(--text-color);
             background-color: var(--input-bg);
+            backdrop-filter: blur(5px);
         }
 
         input::placeholder {
@@ -119,6 +139,7 @@
             margin-top: 30px;
             padding: 20px;
             background-color: var(--result-bg);
+            backdrop-filter: blur(10px);
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
@@ -148,18 +169,18 @@
             border-radius: 50%;
             border: 1px solid var(--border-color);
             cursor: pointer;
-            background: color-mix(in srgb, var(--text-color) 15%, transparent);
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
             color: var(--text-color);
-            backdrop-filter: blur(4px);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.2em;
+            z-index: 2; /* 确保高于遮罩 */
         }
 
         #theme-toggle:hover {
-            background: color-mix(in srgb, var(--text-color) 25%, transparent);
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
@@ -185,7 +206,6 @@
             background-color: #cc0000;
         }
 
-        /* 历史记录按钮和面板样式 */
         #history-toggle {
             position: fixed;
             bottom: 20px;
@@ -194,6 +214,7 @@
             height: 50px;
             border-radius: 50%;
             background-color: var(--primary-color);
+            backdrop-filter: blur(10px);
             color: #fff;
             border: none;
             cursor: pointer;
@@ -201,8 +222,9 @@
             align-items: center;
             justify-content: center;
             font-size: 1.5em;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.089);
             transition: transform 0.3s ease, background-color 0.3s ease;
+            z-index: 2; /* 确保高于遮罩 */
         }
 
         #history-toggle:hover {
@@ -211,7 +233,7 @@
         }
 
         #history-toggle.active {
-            transform: rotate(45deg); /* 点击后旋转，增加交互感 */
+            transform: rotate(45deg);
         }
 
         .history-panel {
@@ -221,17 +243,19 @@
             width: 300px;
             max-height: 400px;
             background-color: var(--container-bg);
+            backdrop-filter: blur(30px);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.041);
             padding: 20px;
             text-align: left;
-            transform: translateX(110%); /* 默认隐藏在右侧 */
+            transform: translateX(110%);
             opacity: 0;
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            z-index: 2; /* 确保高于遮罩 */
         }
 
         .history-panel.active {
-            transform: translateX(0); /* 滑入显示 */
+            transform: translateX(0);
             opacity: 1;
         }
 
@@ -257,6 +281,21 @@
             background-color: var(--result-bg);
             color: var(--primary-color);
         }
+
+        /* 系统主题适配 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --container-bg: rgba(31, 31, 31, 0.644);
+                --input-bg: rgba(51, 51, 51, 0.9);
+                --border-color: #444444;
+                --primary-color: #6ca2ff;
+                --hover-color: #4d7ac7;
+                --result-bg: rgba(34, 34, 34, 0.9);
+                --bg-overlay: rgba(0, 0, 0, 0.5);
+            }
+        }
     </style>
 </head>
 
@@ -279,7 +318,6 @@
             <select id="botid" name="botid" required>
                 <option value="0">BOT 0</option>
                 <option value="1">BOT 1</option>
-                <option value="2">BOT 2</option>
             </select>
 
             <button type="submit">搜索并点歌</button>
@@ -318,11 +356,12 @@
             const themeToggle = document.getElementById('theme-toggle');
             const historyToggle = document.getElementById('history-toggle');
             const historyPanel = document.getElementById('history-panel');
-            const savedTheme = localStorage.getItem('theme') ||
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            // 初始化主题：直接同步设备主题
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', systemDark ? 'dark' : 'light');
 
+            // 手动切换主题并保存
             themeToggle.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -330,10 +369,19 @@
                 localStorage.setItem('theme', newTheme);
             });
 
+            // 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                const savedTheme = localStorage.getItem('theme');
+                if (!savedTheme) { // 未手动设置时跟随系统
+                    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                }
+            });
+
             // 切换历史面板显示并触发动画
             historyToggle.addEventListener('click', () => {
+                console.log('历史按钮点击'); // 调试日志
                 historyPanel.classList.toggle('active');
-                historyToggle.classList.toggle('active'); // 按钮旋转动画
+                historyToggle.classList.toggle('active');
             });
 
             // 点击历史歌曲快速点歌，保留 BOT ID
