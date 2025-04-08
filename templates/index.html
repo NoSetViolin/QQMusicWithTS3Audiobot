@@ -6,9 +6,7 @@
     <link rel="icon" href="http://kennyz.cn:11444/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QQ音乐点歌</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- 样式 -->
     <style>
         :root {
             --bg-color: #f5f5f5;
@@ -21,7 +19,6 @@
             --result-bg: #f8f9fa;
             --transition-time: 0.3s;
 
-            /* 深色主题变量 */
             &[data-theme="dark"] {
                 --bg-color: #121212;
                 --text-color: #e0e0e0;
@@ -51,6 +48,15 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
         .container {
@@ -61,7 +67,38 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
-            margin: 20px;
+        }
+
+        .history-container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 100%;
+            max-width: 300px;
+            text-align: left;
+        }
+
+        .history-container h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-list li:hover {
+            background-color: var(--result-bg);
+            color: var(--primary-color);
         }
 
         h1 {
@@ -170,19 +207,6 @@
             transform: scale(0.95);
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) {
-                --bg-color: #121212;
-                --text-color: #e0e0e0;
-                --container-bg: #1f1f1f;
-                --input-bg: #333333;
-                --border-color: #444444;
-                --primary-color: #6ca2ff;
-                --hover-color: #4d7ac7;
-                --result-bg: #222222;
-            }
-        }
-
         .stop-btn {
             background-color: #ff4444;
             color: white;
@@ -205,45 +229,55 @@
 <body>
     <button id="theme-toggle" title="切换主题">🌓</button>
 
-    <div class="container">
-        <h1>QQ音乐点歌</h1>
-        <form method="POST">
-            <label for="song">输入歌曲名称：</label>
-            <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
+    <div class="main-wrapper">
+        <div class="container">
+            <h1>QQ音乐点歌</h1>
+            <form method="POST" id="song-form">
+                <label for="song">输入歌曲名称：</label>
+                <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
 
-            <label for="quality">选择音质：</label>
-            <select id="quality" name="quality" required>
-                <option value="320">320kbps</option>
-                <option value="flac">FLAC</option>
-            </select>
+                <label for="quality">选择音质：</label>
+                <select id="quality" name="quality" required>
+                    <option value="320">320kbps</option>
+                    <option value="flac">FLAC</option>
+                </select>
 
-            <!-- 选择 BOT ID -->
-            <label for="botid">选择 BOT ID：</label>
-            <select id="botid" name="botid" required>
-                <option value="0">BOT 0</option>
-                <option value="1">BOT 1</option>
-                <option value="2">BOT 2</option>
-            </select>
+                <label for="botid">选择 BOT ID：</label>
+                <select id="botid" name="botid" required>
+                    <option value="0">BOT 0</option>
+                    <option value="1">BOT 1</option>
+                    <option value="2">BOT 2</option>
+                </select>
 
-            <button type="submit">搜索并点歌</button>
-        </form>
+                <button type="submit">搜索并点歌</button>
+            </form>
 
-        <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
+            <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
 
-        {% if play_url %}
-        <div class="result">
-            <h2>播放链接</h2>
-            <p>歌曲名称：{{ song_name }}</p>
-            {% if cover_url %}
-            <img src="{{ cover_url }}" alt="专辑封面"
-                style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
+            {% if play_url %}
+            <div class="result">
+                <h2>播放链接</h2>
+                <p>歌曲名称：{{ song_name }}</p>
+                {% if cover_url %}
+                <img src="{{ cover_url }}" alt="专辑封面"
+                    style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
+                {% endif %}
+                <a href="{{ play_url }}" target="_blank"
+                    style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
+                    音频直链
+                </a>
+            </div>
             {% endif %}
-            <a href="{{ play_url }}" target="_blank"
-                style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
-                音频直链
-            </a>
         </div>
-        {% endif %}
+
+        <div class="history-container">
+            <h2>历史点歌</h2>
+            <ul class="history-list">
+                {% for item in song_history %}
+                <li data-song="{{ item.song }}" data-botid="{{ item.botid }}">{{ item.song }} (BOT {{ item.botid }}, {{ item.count }}次)</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <script>
@@ -260,17 +294,27 @@
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
             });
+
+            // 点击历史歌曲快速点歌，保留 BOT ID
+            document.querySelectorAll('.history-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const songName = item.getAttribute('data-song');
+                    const botId = item.getAttribute('data-botid');
+                    document.getElementById('song').value = songName;
+                    document.getElementById('botid').value = botId;
+                    document.getElementById('song-form').submit();
+                });
+            });
         });
-    </script>
-    <script>
+
         document.getElementById('stop-btn').addEventListener('click', function () {
-            const botId = document.getElementById('botid').value; // 获取选中的 BOT ID
+            const botId = document.getElementById('botid').value;
             fetch('/stop', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `botid=${botId}` // 将 BOT ID 添加到请求体中
+                body: `botid=${botId}`
             })
                 .then(response => response.json())
                 .then(data => {

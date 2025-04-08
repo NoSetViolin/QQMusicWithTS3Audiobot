@@ -5,14 +5,47 @@ from packaging import version
 import threading
 import time
 import schedule
+import json
+import os
 
 app = Flask(__name__)
 
 # -----------------配置区域------------------
 QQ_MUSIC_API = "http://10.0.0.254:3300"
-BACKEND_API = "http://localhost:7000"
-__version__ = "3.2.1"
+BACKEND_API = "http://10.0.0.70:7000"
+__version__ = "3.2.3"
+HISTORY_FILE = "song_history.json"
 # ----------------------------------------------------
+
+def load_history():
+    """ 从文件加载历史记录 """
+    try:
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                if content:  # 检查文件内容是否为空
+                    return json.loads(content)
+                else:
+                    print(f"[警告] {HISTORY_FILE} 文件为空，返回空列表")
+                    return []
+        else:
+            print(f"[信息] {HISTORY_FILE} 文件不存在，创建新文件")
+            save_history([])  # 创建空文件
+            return []
+    except json.JSONDecodeError as e:
+        print(f"[错误] 解析 {HISTORY_FILE} 失败: {e}，返回空列表")
+        return []
+    except Exception as e:
+        print(f"[错误] 加载历史记录时发生未知错误: {e}，返回空列表")
+        return []
+
+def save_history(history):
+    """ 保存历史记录到文件 """
+    try:
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[错误] 保存历史记录到 {HISTORY_FILE} 失败: {e}")
 
 def extract_segment(text, key):
     """ 通用正则提取函数 """
@@ -51,11 +84,26 @@ def run_scheduler():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    song_history = load_history()
     if request.method == "POST":
         song_name = request.form.get("song")
         audio_type = request.form.get("quality")
         bot_id = request.form.get("botid")  # 获取用户选择的 BOT ID
         print(f"\n[前端] 收到请求：歌曲={song_name}, 音质={audio_type}, BOT ID={bot_id}")
+
+        # 更新历史记录
+        new_entry = {"song": song_name, "botid": bot_id, "count": 1}
+        found = False
+        for item in song_history:
+            if item["song"] == song_name and item["botid"] == bot_id:
+                item["count"] += 1
+                found = True
+                break
+        if not found:
+            song_history.insert(0, new_entry)  # 新歌曲插到顶部
+        if len(song_history) > 10:  # 限制历史记录长度
+            song_history.pop()
+        save_history(song_history)
 
         search_url = f"{QQ_MUSIC_API}/search?key={song_name}"
         print(f"[前端] 正在发送搜索请求：{search_url}")
@@ -103,7 +151,7 @@ def index():
             print(f"[前端] 发送到后端的数据：{payload}")
             requests.post(f"{BACKEND_API}/api/send-url", json=payload)
 
-            return render_template("index.html", play_url=play_url, song_name=song_name, cover_url=cover_url)
+            return render_template("index.html", play_url=play_url, song_name=song_name, cover_url=cover_url, song_history=song_history)
 
         except requests.exceptions.RequestException as e:
             print(f"[前端] 网络请求异常：{str(e)}")
@@ -112,7 +160,7 @@ def index():
             print(f"[前端] 处理异常：{str(e)}")
             return jsonify({"error": f"数据处理失败: {str(e)}"}), 500
 
-    return render_template("index.html")
+    return render_template("index.html", song_history=song_history)
 
 @app.route("/stop", methods=["POST"])
 def stop_proxy():
@@ -134,8 +182,11 @@ def stop_proxy():
         return jsonify({"error": "服务暂时不可用"}), 500
 
 if __name__ == "__main__":
+    # 仅在非调试模式或主进程中启动调度器
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        # 启动时立即检查一次更新
         check_for_updates()
+        # 启动定时任务线程
         threading.Thread(target=run_scheduler, daemon=True).start()
     
     app.run(host="0.0.0.0", port=29111, debug=True)
