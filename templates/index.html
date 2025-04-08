@@ -49,14 +49,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-        }
-
-        .main-wrapper {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
+            position: relative;
         }
 
         .container {
@@ -67,38 +60,6 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
-        }
-
-        .history-container {
-            background-color: var(--container-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 100%;
-            max-width: 300px;
-            text-align: left;
-        }
-
-        .history-container h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-        .history-list {
-            list-style: none;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .history-list li {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .history-list li:hover {
-            background-color: var(--result-bg);
-            color: var(--primary-color);
         }
 
         h1 {
@@ -223,66 +184,140 @@
         .stop-btn:hover {
             background-color: #cc0000;
         }
+
+        /* 历史记录按钮和面板样式 */
+        #history-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        #history-toggle:hover {
+            transform: scale(1.1);
+            background-color: var(--hover-color);
+        }
+
+        #history-toggle.active {
+            transform: rotate(45deg); /* 点击后旋转，增加交互感 */
+        }
+
+        .history-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            text-align: left;
+            transform: translateX(110%); /* 默认隐藏在右侧 */
+            opacity: 0;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .history-panel.active {
+            transform: translateX(0); /* 滑入显示 */
+            opacity: 1;
+        }
+
+        .history-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .history-list li:hover {
+            background-color: var(--result-bg);
+            color: var(--primary-color);
+        }
     </style>
 </head>
 
 <body>
     <button id="theme-toggle" title="切换主题">🌓</button>
 
-    <div class="main-wrapper">
-        <div class="container">
-            <h1>QQ音乐点歌</h1>
-            <form method="POST" id="song-form">
-                <label for="song">输入歌曲名称：</label>
-                <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
+    <div class="container">
+        <h1>QQ音乐点歌</h1>
+        <form method="POST" id="song-form">
+            <label for="song">输入歌曲名称：</label>
+            <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
 
-                <label for="quality">选择音质：</label>
-                <select id="quality" name="quality" required>
-                    <option value="320">320kbps</option>
-                    <option value="flac">FLAC</option>
-                </select>
+            <label for="quality">选择音质：</label>
+            <select id="quality" name="quality" required>
+                <option value="320">320kbps</option>
+                <option value="flac">FLAC</option>
+            </select>
 
-                <label for="botid">选择 BOT ID：</label>
-                <select id="botid" name="botid" required>
-                    <option value="0">BOT 0</option>
-                    <option value="1">BOT 1</option>
-                    <option value="2">BOT 2</option>
-                </select>
+            <label for="botid">选择 BOT ID：</label>
+            <select id="botid" name="botid" required>
+                <option value="0">BOT 0</option>
+                <option value="1">BOT 1</option>
+                <option value="2">BOT 2</option>
+            </select>
 
-                <button type="submit">搜索并点歌</button>
-            </form>
+            <button type="submit">搜索并点歌</button>
+        </form>
 
-            <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
+        <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
 
-            {% if play_url %}
-            <div class="result">
-                <h2>播放链接</h2>
-                <p>歌曲名称：{{ song_name }}</p>
-                {% if cover_url %}
-                <img src="{{ cover_url }}" alt="专辑封面"
-                    style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
-                {% endif %}
-                <a href="{{ play_url }}" target="_blank"
-                    style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
-                    音频直链
-                </a>
-            </div>
+        {% if play_url %}
+        <div class="result">
+            <h2>播放链接</h2>
+            <p>歌曲名称：{{ song_name }}</p>
+            {% if cover_url %}
+            <img src="{{ cover_url }}" alt="专辑封面"
+                style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
             {% endif %}
+            <a href="{{ play_url }}" target="_blank"
+                style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
+                音频直链
+            </a>
         </div>
+        {% endif %}
+    </div>
 
-        <div class="history-container">
-            <h2>历史点歌</h2>
-            <ul class="history-list">
-                {% for item in song_history %}
-                <li data-song="{{ item.song }}" data-botid="{{ item.botid }}">{{ item.song }} (BOT {{ item.botid }}, {{ item.count }}次)</li>
-                {% endfor %}
-            </ul>
-        </div>
+    <button id="history-toggle" title="历史点歌">🎵</button>
+    <div class="history-panel" id="history-panel">
+        <h2>历史点歌</h2>
+        <ul class="history-list">
+            {% for item in song_history %}
+            <li data-song="{{ item.song }}" data-botid="{{ item.botid }}">{{ item.song }} (BOT {{ item.botid }}, {{ item.count }}次)</li>
+            {% endfor %}
+        </ul>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const themeToggle = document.getElementById('theme-toggle');
+            const historyToggle = document.getElementById('history-toggle');
+            const historyPanel = document.getElementById('history-panel');
             const savedTheme = localStorage.getItem('theme') ||
                 (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
@@ -293,6 +328,12 @@
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
+            });
+
+            // 切换历史面板显示并触发动画
+            historyToggle.addEventListener('click', () => {
+                historyPanel.classList.toggle('active');
+                historyToggle.classList.toggle('active'); // 按钮旋转动画
             });
 
             // 点击历史歌曲快速点歌，保留 BOT ID
