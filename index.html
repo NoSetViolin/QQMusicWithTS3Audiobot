@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="http://kennyz.cn:11444/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ音乐点歌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333333;
+            --container-bg: #ffffff;
+            --input-bg: #f0f0f0;
+            --border-color: #dddddd;
+            --primary-color: #2549ff;
+            --hover-color: #1a3ab5;
+            --result-bg: #f8f9fa;
+            --transition-time: 0.3s;
+
+            &[data-theme="dark"] {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --container-bg: #1f1f1f;
+                --input-bg: #333333;
+                --border-color: #444444;
+                --primary-color: #6ca2ff;
+                --hover-color: #4d7ac7;
+                --result-bg: #222222;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color var(--transition-time),
+                color var(--transition-time),
+                border-color var(--transition-time);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        input,
+        select {
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-color);
+            background-color: var(--input-bg);
+        }
+
+        input::placeholder {
+            color: color-mix(in srgb, var(--text-color) 50%, transparent);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 1.1rem;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--result-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .result h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            background: color-mix(in srgb, var(--text-color) 15%, transparent);
+            color: var(--text-color);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        #theme-toggle:hover {
+            background: color-mix(in srgb, var(--text-color) 25%, transparent);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .stop-btn {
+            background-color: #ff4444;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+
+        .stop-btn:hover {
+            background-color: #cc0000;
+        }
+
+        /* 历史记录按钮和面板样式 */
+        #history-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        #history-toggle:hover {
+            transform: scale(1.1);
+            background-color: var(--hover-color);
+        }
+
+        #history-toggle.active {
+            transform: rotate(45deg); /* 点击后旋转，增加交互感 */
+        }
+
+        .history-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            text-align: left;
+            transform: translateX(110%); /* 默认隐藏在右侧 */
+            opacity: 0;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .history-panel.active {
+            transform: translateX(0); /* 滑入显示 */
+            opacity: 1;
+        }
+
+        .history-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .history-list li:hover {
+            background-color: var(--result-bg);
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+    <button id="theme-toggle" title="切换主题">🌓</button>
+
+    <div class="container">
+        <h1>QQ音乐点歌</h1>
+        <form method="POST" id="song-form">
+            <label for="song">输入歌曲名称：</label>
+            <input type="text" id="song" name="song" placeholder="请输入歌曲名称" required>
+
+            <label for="quality">选择音质：</label>
+            <select id="quality" name="quality" required>
+                <option value="320">320kbps</option>
+                <option value="flac">FLAC</option>
+            </select>
+
+            <label for="botid">选择 BOT ID：</label>
+            <select id="botid" name="botid" required>
+                <option value="0">BOT 0</option>
+                <option value="1">BOT 1</option>
+                <option value="2">BOT 2</option>
+            </select>
+
+            <button type="submit">搜索并点歌</button>
+        </form>
+
+        <button type="button" id="stop-btn" class="stop-btn">停止播放</button>
+
+        {% if play_url %}
+        <div class="result">
+            <h2>播放链接</h2>
+            <p>歌曲名称：{{ song_name }}</p>
+            {% if cover_url %}
+            <img src="{{ cover_url }}" alt="专辑封面"
+                style="max-width: 200px; margin: 15px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block;">
+            {% endif %}
+            <a href="{{ play_url }}" target="_blank"
+                style="display: inline-block; margin-top: 15px; padding: 8px 16px; background: var(--result-bg); border-radius: 6px;">
+                音频直链
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <button id="history-toggle" title="历史点歌">🎵</button>
+    <div class="history-panel" id="history-panel">
+        <h2>历史点歌</h2>
+        <ul class="history-list">
+            {% for item in song_history %}
+            <li data-song="{{ item.song }}" data-botid="{{ item.botid }}">{{ item.song }} (BOT {{ item.botid }}, {{ item.count }}次)</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            const historyToggle = document.getElementById('history-toggle');
+            const historyPanel = document.getElementById('history-panel');
+            const savedTheme = localStorage.getItem('theme') ||
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            // 切换历史面板显示并触发动画
+            historyToggle.addEventListener('click', () => {
+                historyPanel.classList.toggle('active');
+                historyToggle.classList.toggle('active'); // 按钮旋转动画
+            });
+
+            // 点击历史歌曲快速点歌，保留 BOT ID
+            document.querySelectorAll('.history-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const songName = item.getAttribute('data-song');
+                    const botId = item.getAttribute('data-botid');
+                    document.getElementById('song').value = songName;
+                    document.getElementById('botid').value = botId;
+                    document.getElementById('song-form').submit();
+                });
+            });
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', function () {
+            const botId = document.getElementById('botid').value;
+            fetch('/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `botid=${botId}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('失败: ' + data.error);
+                    } else {
+                        console.log('成功: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    console.error('请求发送失败');
+                });
+        });
+    </script>
+</body>
+
+</html>
